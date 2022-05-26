@@ -1,0 +1,2 @@
+# Description #
+A combinator(chest) that can read blueprint and output as signals all items, that are necessary to build that blueprint. Also works for blueprint books, in that case all nested blueprints are counted.
