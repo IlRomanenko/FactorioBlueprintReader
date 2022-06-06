@@ -49,6 +49,7 @@ function Combinator.destroy(entity)
 	local combinator_entity = entity.surface.find_entity(config.COMBINATOR_NAME, entity.position)
 	if not combinator_entity then return; end
     local comb = Combinator.data[combinator_entity.unit_number]
+    if not comb then return; end
     comb.destroyed = true
     comb.unit_number = combinator_entity.unit_number
     if entity.name == config.COMBINATOR_NAME  then
@@ -62,6 +63,7 @@ function Combinator.on_mined_entity(entity, buffer)
     local combinator_entity = entity.surface.find_entity(config.COMBINATOR_NAME, entity.position)
 	if not combinator_entity then return; end
     local comb = Combinator.data[combinator_entity.unit_number]
+    if not comb then return; end
     for i = 1, #comb.inventory do
         buffer.insert(comb.inventory[i])
     end
@@ -117,6 +119,7 @@ end
 
 function Combinator.update_inner_positions(entity)
     local comb = Combinator.data[entity.unit_number]
+    if not comb then return; end
     comb.chest.teleport(comb.entity.position)
 end
 

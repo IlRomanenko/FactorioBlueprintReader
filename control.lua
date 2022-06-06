@@ -53,6 +53,7 @@ end
 
 local function on_destroyed(event)
     local entity = event.entity
+    if not entity then return end
     if entity.name == config.COMBINATOR_NAME then
         Combinator.destroy(entity)
     elseif entity.name == config.MODULE_CHEST_NAME then
