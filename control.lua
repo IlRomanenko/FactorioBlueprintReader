@@ -21,7 +21,7 @@ local function on_load()
     refresh_rate = settings.global[config.REFRESH_RATE_NAME].value
 
     if remote.interfaces['PickerDollies'] then
-		script.on_event(
+        script.on_event(
             remote.call('PickerDollies', 'dolly_moved_entity_id'),
             function(event)
                 local entity = event.moved_entity
@@ -30,7 +30,7 @@ local function on_load()
                 end
             end
         )
-	end
+    end
 end
 
 local function on_init()

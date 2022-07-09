@@ -30,8 +30,8 @@ function List:remove()
     end
     next.prev = self.prev
     next.prev.next = next
-    -- self.prev = nil
-    -- self.next = nil
+    self.prev = nil
+    self.next = nil
     return next
 end
 

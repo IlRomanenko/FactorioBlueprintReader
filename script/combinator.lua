@@ -2,10 +2,12 @@ local List = require 'linked_list'
 local config = require 'config'
 local Signals = require 'signals'
 
-local Combinator = {}
+local Combinator = {
+    data = {},
+    ordered = nil,
+    total_combinators = 0
+}
 Combinator.mt = {__index = Combinator}
-Combinator.data = {}
-Combinator.ordered = nil
 
 
 function Combinator.init_global()
@@ -18,6 +20,7 @@ function Combinator.on_load()
     for _, comb in pairs(Combinator.data) do
         setmetatable(comb, Combinator.mt);
         Combinator.ordered = List.append(Combinator.ordered, List.create(comb))
+        Combinator.total_combinators = Combinator.total_combinators + 1
     end
 end
 
@@ -27,27 +30,28 @@ function Combinator.create(entity)
         entity = entity,
         unit_number = entity.unit_number,
         control_behavior = entity.get_or_create_control_behavior(),
-		chest = entity.surface.create_entity {
-			name = config.MODULE_CHEST_NAME,
-			position = entity.position,
-			force = entity.force,
-			create_build_effect_smoke = false,
-		},
+        chest = entity.surface.create_entity {
+            name = config.MODULE_CHEST_NAME,
+            position = entity.position,
+            force = entity.force,
+            create_build_effect_smoke = false,
+        },
         inventory = nil,
         tick = 0,
         destroyed = false
     }, Combinator.mt)
-	comb.chest.destructible = false
-	comb.inventory = comb.chest.get_inventory(defines.inventory.chest)
+    comb.chest.destructible = false
+    comb.inventory = comb.chest.get_inventory(defines.inventory.chest)
 
     Combinator.data[comb.unit_number] = comb
     Combinator.ordered = List.append(Combinator.ordered, List.create(comb))
+    Combinator.total_combinators = Combinator.total_combinators + 1
     return comb
 end
 
 function Combinator.destroy(entity)
-	local combinator_entity = entity.surface.find_entity(config.COMBINATOR_NAME, entity.position)
-	if not combinator_entity then return; end
+    local combinator_entity = entity.surface.find_entity(config.COMBINATOR_NAME, entity.position)
+    if not combinator_entity then return; end
     local comb = Combinator.data[combinator_entity.unit_number]
     if not comb then return; end
     comb.destroyed = true
@@ -61,7 +65,7 @@ end
 
 function Combinator.on_mined_entity(entity, buffer)
     local combinator_entity = entity.surface.find_entity(config.COMBINATOR_NAME, entity.position)
-	if not combinator_entity then return; end
+    if not combinator_entity then return; end
     local comb = Combinator.data[combinator_entity.unit_number]
     if not comb then return; end
     for i = 1, #comb.inventory do
@@ -72,10 +76,12 @@ end
 
 function Combinator.on_tick(tick, refresh_rate)
     local total_checked = 0
-    while Combinator.ordered ~= nil and tick > Combinator.ordered.value.tick + refresh_rate do
+    local max_checked = (Combinator.total_combinators + refresh_rate - 1) / refresh_rate
+    while Combinator.ordered ~= nil and tick > Combinator.ordered.value.tick + refresh_rate and total_checked < max_checked do
         if Combinator.ordered.value.destroyed then
             Combinator.data[Combinator.ordered.value.unit_number] = nil
             Combinator.ordered = Combinator.ordered:remove()
+            Combinator.total_combinators = Combinator.total_combinators - 1
         else
             Combinator.ordered.value:update(tick)
             Combinator.ordered = Combinator.ordered.next
@@ -105,7 +111,7 @@ end
 
 function Combinator:update_signals()
     local inventory = self.inventory
-	if not inventory or not inventory.valid or inventory.is_empty() then
+    if not inventory or not inventory.valid or inventory.is_empty() then
         return {}
     end
     return Signals.collect_blueprint_signals(inventory)
