@@ -10,12 +10,12 @@ local Combinator = {
 Combinator.mt = {__index = Combinator}
 
 
-function Combinator.init_global()
-    global.combinators = global.combinators or {}
+function Combinator.init_storage()
+    storage.combinators = storage.combinators or {}
 end
 
 function Combinator.on_load()
-    Combinator.data = global.combinators
+    Combinator.data = storage.combinators
     Combinator.ordered = nil
     for _, comb in pairs(Combinator.data) do
         setmetatable(comb, Combinator.mt);
@@ -105,9 +105,8 @@ function Combinator:update(tick)
         end
         return
     end
-    self.control_behavior.parameters = self:update_signals()
+    self.control_behavior.sections[1].filters = self:update_signals()
 end
-
 
 function Combinator:update_signals()
     local inventory = self.inventory

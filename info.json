@@ -3,7 +3,7 @@
     "version": "1.0.4",
     "title": "Blueprint reader combinator",
     "author": "IlyaSM",
-    "factorio_version": "1.1",
+    "factorio_version": "2.0",
     "dependencies": ["base >= 1.1", "rusty-locale >= 1.0.16"],
     "description": "This mod adds combinator, that provides items in blueprint as signals."
 }

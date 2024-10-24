@@ -34,7 +34,7 @@ local function on_load()
 end
 
 local function on_init()
-    Combinator.init_global()
+    Combinator.init_storage()
     on_load()
 end
 
@@ -89,7 +89,7 @@ script.on_event(defines.events.on_robot_built_entity, on_built)
 script.on_event(defines.events.script_raised_built, on_built)
 script.on_event(defines.events.script_raised_revive, on_built)
 
-script.on_event(defines.events.on_entity_destroyed, on_destroyed)
+script.on_event(defines.events.on_object_destroyed, on_destroyed)
 script.on_event(defines.events.on_robot_pre_mined, on_destroyed)
 script.on_event(defines.events.on_entity_died, on_destroyed)
 script.on_event(defines.events.script_raised_destroy, on_destroyed)

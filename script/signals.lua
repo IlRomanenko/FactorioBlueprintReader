@@ -7,11 +7,11 @@ function Signals.get_signal_id(name)
     local item_name = name
     local signal = signals_cache[name]
     if not signal then
-        local type = (game.item_prototypes[name] and 'item') or (game.fluid_prototypes[name] and 'fluid')
-        if not type and game.entity_prototypes[name] then
-            local prototype = game.entity_prototypes[name]
+        local type = (prototypes.item[name] and 'item') or (prototypes.fluid[name] and 'fluid')
+        if not type and prototypes.entity[name] then
+            local prototype = prototypes.entity[name]
             if #prototype.items_to_place_this > 0 then
-                item_name = game.entity_prototypes[name].items_to_place_this[1].name
+                item_name = prototype.items_to_place_this[1].name
                 type = 'item'
             else
                 type = 'virtual'
@@ -20,7 +20,8 @@ function Signals.get_signal_id(name)
         end
         signal = {
             name = item_name,
-            type = type
+            type = type,
+            quality = 'normal',
         }
         signals_cache[name] = signal
     end
@@ -29,14 +30,11 @@ end
 
 function Signals.create_signals(entities)
     local signals = {}
-    local index = 1
     for name, count in pairs(entities) do
         table.insert(signals, {
-            signal = Signals.get_signal_id(name),
-            count = count,
-            index = index
+            value = Signals.get_signal_id(name),
+            min = count
         })
-        index = index + 1
     end
     return signals
 end
@@ -55,8 +53,8 @@ function Signals.collect_blueprint_entities(stack, entities)
             Signals.collect_blueprint_entities(cur_stack, entities)
         end
     elseif stack.is_blueprint then
-        for key, count in pairs(stack.cost_to_build) do
-            entities[key] = entities[key] + count
+        for _, items in pairs(stack.cost_to_build) do
+            entities[items.name] = entities[items.name] + items.count
         end
     end
 end
