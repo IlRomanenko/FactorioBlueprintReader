@@ -1,7 +1,8 @@
 local config = require 'config'
 local Combinator = require 'script.combinator'
 
-local refresh_rate = 1
+refresh_rate = 1
+quality_enabled = true
 
 local function enable_recipes()
     for _, force in pairs(game.forces) do
@@ -13,12 +14,14 @@ end
 
 local function on_mod_setting_changed(event)
     refresh_rate = settings.global[config.REFRESH_RATE_NAME].value
+    quality_enabled = settings.global[config.QUALITY_ENABLED_NAME].value
 end
 
 local function on_load()
     Combinator.on_load()
 
     refresh_rate = settings.global[config.REFRESH_RATE_NAME].value
+    quality_enabled = settings.global[config.QUALITY_ENABLED_NAME].value
 
     if remote.interfaces['PickerDollies'] then
         script.on_event(
@@ -34,7 +37,7 @@ local function on_load()
 end
 
 local function on_init()
-    Combinator.init_global()
+    Combinator.init_storage()
     on_load()
 end
 
@@ -69,7 +72,13 @@ local function on_mined_entity(event)
 end
 
 local function on_tick(event)
-    Combinator.on_tick(event.tick, refresh_rate)
+    Combinator.on_tick(event.tick, refresh_rate, quality_enabled)
+end
+
+local function on_entity_settings_pusted(event)
+    if event.source.name == config.COMBINATOR_NAME and event.destination.name == config.COMBINATOR_NAME then
+        Combinator.copy_inventory(event.source, event.destination)
+    end
 end
 
 local function on_gui_opened(event)
@@ -89,7 +98,9 @@ script.on_event(defines.events.on_robot_built_entity, on_built)
 script.on_event(defines.events.script_raised_built, on_built)
 script.on_event(defines.events.script_raised_revive, on_built)
 
-script.on_event(defines.events.on_entity_destroyed, on_destroyed)
+script.on_event(defines.events.on_entity_settings_pasted, on_entity_settings_pusted)
+
+script.on_event(defines.events.on_object_destroyed, on_destroyed)
 script.on_event(defines.events.on_robot_pre_mined, on_destroyed)
 script.on_event(defines.events.on_entity_died, on_destroyed)
 script.on_event(defines.events.script_raised_destroy, on_destroyed)
