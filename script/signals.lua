@@ -3,13 +3,20 @@ Signals.mt = {__index = Signals}
 
 local signals_cache = {}
 
-function Signals.get_signal_id(name)
-    local item_name = name
-    local signal = signals_cache[name]
+local QualityItem = {}
+QualityItem.mt = {__index = QualityItem}
+
+function QualityItem.new(entity)
+    return setmetatable({ name = entity.name, quality = entity.quality }, QualityItem)
+end
+
+function Signals.get_signal_id(quality_item)
+    local item_name = quality_item.name
+    local signal = signals_cache[quality_item]
     if not signal then
-        local type = (prototypes.item[name] and 'item') or (prototypes.fluid[name] and 'fluid')
-        if not type and prototypes.entity[name] then
-            local prototype = prototypes.entity[name]
+        local type = (prototypes.item[item_name] and 'item') or (prototypes.fluid[item_name] and 'fluid')
+        if not type and prototypes.entity[item_name] then
+            local prototype = prototypes.entity[item_name]
             if #prototype.items_to_place_this > 0 then
                 item_name = prototype.items_to_place_this[1].name
                 type = 'item'
@@ -21,25 +28,25 @@ function Signals.get_signal_id(name)
         signal = {
             name = item_name,
             type = type,
-            quality = 'normal',
+            quality = quality_item.quality,
         }
-        signals_cache[name] = signal
+        signals_cache[quality_item] = signal
     end
     return signal
 end
 
 function Signals.create_signals(entities)
     local signals = {}
-    for name, count in pairs(entities) do
+    for quality_item, count in pairs(entities) do
         table.insert(signals, {
-            value = Signals.get_signal_id(name),
-            min = count
+            value = Signals.get_signal_id(quality_item),
+            min = count,
         })
     end
     return signals
 end
 
-function Signals.collect_blueprint_entities(stack, entities)
+function Signals.collect_blueprint_entities(stack, entities, quality_enabled)
     if not stack.valid_for_read then
         return
     end
@@ -54,7 +61,11 @@ function Signals.collect_blueprint_entities(stack, entities)
         end
     elseif stack.is_blueprint then
         for _, items in pairs(stack.cost_to_build) do
-            entities[items.name] = entities[items.name] + items.count
+            local quality_item = QualityItem.new(items)
+            if not quality_enabled then
+                quality_item.quality = 'normal'
+            end
+            entities[quality_item] = entities[quality_item] + items.count
         end
     end
 end
@@ -65,11 +76,11 @@ local function get_entities_table()
     return res
 end
 
-function Signals.collect_blueprint_signals(inventory)
+function Signals.collect_blueprint_signals(inventory, quality_enabled)
     local entities = get_entities_table()
     for i = 1, #inventory do
         local stack = inventory[i]
-        Signals.collect_blueprint_entities(stack, entities)
+        Signals.collect_blueprint_entities(stack, entities, quality_enabled)
     end
     return Signals.create_signals(entities)
 end

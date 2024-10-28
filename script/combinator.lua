@@ -74,7 +74,7 @@ function Combinator.on_mined_entity(entity, buffer)
     Combinator.destroy(entity)
 end
 
-function Combinator.on_tick(tick, refresh_rate)
+function Combinator.on_tick(tick, refresh_rate, quality_enabled)
     local total_checked = 0
     local max_checked = (Combinator.total_combinators + refresh_rate - 1) / refresh_rate
     while Combinator.ordered ~= nil and tick > Combinator.ordered.value.tick + refresh_rate and total_checked < max_checked do
@@ -83,14 +83,14 @@ function Combinator.on_tick(tick, refresh_rate)
             Combinator.ordered = Combinator.ordered:remove()
             Combinator.total_combinators = Combinator.total_combinators - 1
         else
-            Combinator.ordered.value:update(tick)
+            Combinator.ordered.value:update(tick, quality_enabled)
             Combinator.ordered = Combinator.ordered.next
         end
         total_checked = total_checked + 1
     end
 end
 
-function Combinator:update(tick)
+function Combinator:update(tick, quality_enabled)
     if self.destroyed then
         assert(false, "Update on destroyed object")
     end
@@ -105,15 +105,15 @@ function Combinator:update(tick)
         end
         return
     end
-    self.control_behavior.sections[1].filters = self:update_signals()
+    self.control_behavior.sections[1].filters = self:update_signals(quality_enabled)
 end
 
-function Combinator:update_signals()
+function Combinator:update_signals(quality_enabled)
     local inventory = self.inventory
     if not inventory or not inventory.valid or inventory.is_empty() then
         return {}
     end
-    return Signals.collect_blueprint_signals(inventory)
+    return Signals.collect_blueprint_signals(inventory, quality_enabled)
 end
 
 function Combinator.open(entity, player_index)
@@ -126,6 +126,18 @@ function Combinator.update_inner_positions(entity)
     local comb = Combinator.data[entity.unit_number]
     if not comb then return; end
     comb.chest.teleport(comb.entity.position)
+end
+
+function Combinator.copy_inventory(src, dst)
+    local src_comb = Combinator.data[src.unit_number]
+    local dst_comb = Combinator.data[dst.unit_number]
+    if not src_comb or src_comb.destroyed then return; end
+    if not dst_comb or dst_comb.destroyed then return; end
+
+    dst_comb.inventory.clear()
+    for i = 1, #src_comb.inventory do
+        dst_comb.inventory.insert(src_comb.inventory[i])
+    end
 end
 
 return Combinator
