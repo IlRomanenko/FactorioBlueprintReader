@@ -1,0 +1,14 @@
+{
+  "entity": [
+    [
+      "blueprint_reader:blueprint-combinator",
+      "blueprint_reader_blueprint-combinator"
+    ]
+  ],
+  "item": [
+    [
+      "blueprint_reader:blueprint-combinator",
+      "blueprint_reader_blueprint-combinator"
+    ]
+  ]
+}

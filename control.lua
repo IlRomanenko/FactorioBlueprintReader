@@ -75,7 +75,7 @@ local function on_tick(event)
     Combinator.on_tick(event.tick, refresh_rate, quality_enabled)
 end
 
-local function on_entity_settings_pusted(event)
+local function on_entity_settings_pasted(event)
     if event.source.name == config.COMBINATOR_NAME and event.destination.name == config.COMBINATOR_NAME then
         Combinator.copy_inventory(event.source, event.destination)
     end
@@ -98,7 +98,7 @@ script.on_event(defines.events.on_robot_built_entity, on_built)
 script.on_event(defines.events.script_raised_built, on_built)
 script.on_event(defines.events.script_raised_revive, on_built)
 
-script.on_event(defines.events.on_entity_settings_pasted, on_entity_settings_pusted)
+script.on_event(defines.events.on_entity_settings_pasted, on_entity_settings_pasted)
 
 script.on_event(defines.events.on_object_destroyed, on_destroyed)
 script.on_event(defines.events.on_robot_pre_mined, on_destroyed)
